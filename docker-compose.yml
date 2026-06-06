@@ -1,0 +1,35 @@
+services:
+  logger:
+    image: python:3.9-slim
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python chaos.py
+    networks:
+      - monitor-net
+
+  loki:
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitor-net
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - .:/var/log/app
+      - ./promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - monitor-net
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - monitor-net
+
+networks:
+  monitor-net:
+    driver: bridge
